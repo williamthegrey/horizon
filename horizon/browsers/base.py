@@ -78,6 +78,10 @@ class ResourceBrowser(html.HTMLElement):
 
         This is a template used to render the breadcrumb.
         Defaults to ``"horizon/common/_breadcrumb.html"``.
+
+    .. attribute:: container_selected
+
+        when navigation's item is selected,don't display content table
     """
     name = None
     verbose_name = None
@@ -111,6 +115,7 @@ class ResourceBrowser(html.HTMLElement):
                                "navigation_table_class")
         if tables_dict:
             self.set_tables(tables_dict)
+        self.container_selected = False
 
     def check_table_class(self, cls, attr_name):
         if not cls or not issubclass(cls, DataTable):

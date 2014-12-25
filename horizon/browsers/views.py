@@ -54,5 +54,6 @@ class ResourceBrowserView(MultiTableView):
     def get_context_data(self, **kwargs):
         context = super(ResourceBrowserView, self).get_context_data(**kwargs)
         browser = self.get_browser()
+        browser.container_selected = self.navigation_selection
         context["%s_browser" % browser.name] = browser
         return context
