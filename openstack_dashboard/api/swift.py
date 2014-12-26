@@ -95,12 +95,18 @@ def _objectify(items, container_name):
 def _metadata_to_header(metadata):
     headers = {}
     public = metadata.get('is_public')
+    encrypted = metadata.get('encrypted')
 
     if public is True:
         public_container_acls = [GLOBAL_READ_ACL, LIST_CONTENTS_ACL]
         headers['x-container-read'] = ",".join(public_container_acls)
     elif public is False:
         headers['x-container-read'] = ""
+
+    if encrypted is True:
+        headers['x-container-meta-encrypted'] = "True"
+    elif encrypted is False:
+        headers['x-container-meta-encrypted'] = "False"
 
     return headers
 
@@ -178,6 +184,7 @@ def swift_get_container(request, container_name, with_data=True):
         'data': data,
         'is_public': is_public,
         'public_url': public_url,
+        'encrypted': headers.get('x-container-meta-encrypted'),
     }
     return Container(container_info)
 

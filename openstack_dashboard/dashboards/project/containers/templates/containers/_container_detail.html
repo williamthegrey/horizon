@@ -9,6 +9,8 @@
   <dl>
     <dt>{% trans "Container Name" %}</dt>
     <dd>{{ container.name }}</dd>
+    <dt>{% trans "Container Encryption" %}</dt>
+    <dd>{{ container.encrypted }}</dd>
     <dt>{% trans "Container Access" %}</dt>
     {% if container.public_url %}
     <dd>{% trans "Public" %}</dd>
