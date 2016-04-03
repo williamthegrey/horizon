@@ -176,6 +176,7 @@ def swift_get_container(request, container_name, with_data=True):
         timestamp = timeutils.iso8601_from_timestamp(ts_float)
     except Exception:
         pass
+    encryption = headers.get('x-container-meta-encrypted', 'False') in ('True', 'true')
     container_info = {
         'name': container_name,
         'container_object_count': headers.get('x-container-object-count'),
@@ -184,7 +185,7 @@ def swift_get_container(request, container_name, with_data=True):
         'data': data,
         'is_public': is_public,
         'public_url': public_url,
-        'encryption': headers.get('x-container-meta-encrypted', False),
+        'encryption': encryption
     }
     return Container(container_info)
 
