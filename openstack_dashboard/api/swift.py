@@ -184,7 +184,7 @@ def swift_get_container(request, container_name, with_data=True):
         'data': data,
         'is_public': is_public,
         'public_url': public_url,
-        'encrypted': headers.get('x-container-meta-encrypted', False),
+        'encryption': headers.get('x-container-meta-encrypted', False),
     }
     return Container(container_info)
 

@@ -17,8 +17,12 @@
     {% else %}
     <dd>{% trans "Private" %}</dd>
     {% endif %}
-    <dt>{% trans "Container Encrypted" %}</dt>
-    <dd>{{ container.encrypted }}</dd>
+    <dt>{% trans "Container Encryption" %}</dt>
+    {% if container.encryption %}
+    <dd>{% trans "Yes" %}</dd>
+    {% else %}
+    <dd>{% trans "No" %}</dd>
+    {% endif %}
     <dt>{% trans "Object Count" %}</dt>
     <dd>{{ container.container_object_count }}</dd>
     <dt>{% trans "Size" %}</dt>
