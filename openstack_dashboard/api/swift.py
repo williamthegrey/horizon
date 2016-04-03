@@ -17,6 +17,7 @@
 #    under the License.
 
 import logging
+import re
 
 import six.moves.urllib.parse as urlparse
 import swiftclient
@@ -29,7 +30,6 @@ from horizon.utils.memoized import memoized  # noqa
 
 from openstack_dashboard.api import base
 from openstack_dashboard.openstack.common import timeutils
-
 
 LOG = logging.getLogger(__name__)
 FOLDER_DELIMITER = "/"
@@ -108,6 +108,12 @@ def _metadata_to_header(metadata):
 @memoized
 def swift_api(request):
     endpoint = base.url_for(request, 'object-store')
+    if getattr(settings, 'SWIFT_ENCRYPTION', False) and \
+            getattr(settings, 'SWIFT_ENCRYPTION_URL', None):
+        base_endpoint = re.search('(https?://.+?)/', endpoint).group(1)
+        new_base_endpoint = settings.SWIFT_ENCRYPTION_URL
+        endpoint = endpoint.replace(base_endpoint, new_base_endpoint)
+
     cacert = getattr(settings, 'OPENSTACK_SSL_CACERT', None)
     insecure = getattr(settings, 'OPENSTACK_SSL_NO_VERIFY', False)
     LOG.debug('Swift connection created using token "%s" and url "%s"'
@@ -144,7 +150,7 @@ def swift_get_containers(request, marker=None):
                                                          marker=marker,
                                                          full_listing=True)
     container_objs = [Container(c) for c in containers]
-    if(len(container_objs) > limit):
+    if (len(container_objs) > limit):
         return (container_objs[0:-1], True)
     else:
         return (container_objs, False)
@@ -219,10 +225,10 @@ def swift_get_objects(request, container_name, prefix=None, marker=None,
                   delimiter=FOLDER_DELIMITER,
                   full_listing=True)
     headers, objects = swift_api(request).get_container(container_name,
-                                                          **kwargs)
+                                                        **kwargs)
     object_objs = _objectify(objects, container_name)
 
-    if(len(object_objs) > limit):
+    if (len(object_objs) > limit):
         return (object_objs[0:-1], True)
     else:
         return (object_objs, False)
