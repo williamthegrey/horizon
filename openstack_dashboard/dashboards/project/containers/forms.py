@@ -41,6 +41,10 @@ class CreateContainer(forms.SelfHandlingForm):
         ("private", _("Private")),
         ("public", _("Public")),
     )
+    ENCRYPTION_CHOICES = (
+        ("no", _("No")),
+        ("yes", _("Yes")),
+    )
 
     parent = forms.CharField(max_length=255,
                              required=False,
@@ -50,12 +54,15 @@ class CreateContainer(forms.SelfHandlingForm):
                            validators=[no_slash_validator])
     access = forms.ChoiceField(label=_("Container Access"),
                                choices=ACCESS_CHOICES)
+    encryption = forms.ChoiceField(label=_("Container Encryption"),
+                                   choices=ENCRYPTION_CHOICES)
 
     def handle(self, request, data):
         try:
             if not data['parent']:
                 is_public = data["access"] == "public"
-                metadata = ({'is_public': is_public})
+                encryption = data["encryption"] == "yes"
+                metadata = ({'is_public': is_public, 'encryption': encryption})
                 # Create a container
                 api.swift.swift_create_container(request,
                                                  data["name"],
