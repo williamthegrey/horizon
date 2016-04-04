@@ -38,6 +38,11 @@ urlpatterns = patterns(VIEW_MOD,
         views.ContainerDetailView.as_view(),
         name='container_detail'),
 
+    url(r'^(?P<container_name>.+?)/(?P<subfolder_path>(.+/)+)'
+        '?container_share$',
+        views.ContainerShareView.as_view(),
+        name='container_share'),
+
     url(r'^(?P<container_name>[^/]+)/(?P<object_path>.+)/object_detail$',
         views.ObjectDetailView.as_view(),
         name='object_detail'),

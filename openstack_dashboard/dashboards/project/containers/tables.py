@@ -103,6 +103,24 @@ class MakePrivateContainer(tables.Action):
         return shortcuts.redirect('horizon:project:containers:index')
 
 
+class ShareContainer(tables.LinkAction):
+    name = "share_container"
+    verbose_name = _("Share container")
+    icon = "pencil"
+    url = "horizon:project:containers:container_share"
+    classes = ("ajax-modal",)
+
+    def get_link_url(self, datum=None):
+        obj_id = self.table.get_object_id(datum)
+        return reverse(self.url, args=(obj_id, ))
+
+    def allowed(self, request, container):
+        # Container metadata have not been loaded
+        if not hasattr(container, 'encryption'):
+            return False
+        return container.encryption
+
+
 class DeleteContainer(tables.DeleteAction):
     @staticmethod
     def action_present(count):
@@ -278,7 +296,7 @@ class ContainersTable(tables.DataTable):
         status_columns = ['metadata_loaded', ]
         table_actions = (CreateContainer,)
         row_actions = (ViewContainer, MakePublicContainer,
-                       MakePrivateContainer, DeleteContainer,)
+                       MakePrivateContainer, ShareContainer, DeleteContainer,)
         browser_table = "navigation"
         footer = False
 
