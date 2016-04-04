@@ -311,6 +311,12 @@ def swift_upload_object(request, container_name, object_name,
     return StorageObject(obj_info, container_name)
 
 
+def swift_update_object(request, container_name, object_name, metadata=({})):
+    headers = _metadata_to_header(metadata)
+    swift_api(request).post_object(container_name, object_name, headers=headers)
+    return True
+
+
 def swift_create_pseudo_folder(request, container_name, pseudo_folder_name):
     headers = {}
     etag = swift_api(request).put_object(container_name,
