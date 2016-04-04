@@ -344,6 +344,31 @@ class UpdateObject(tables.LinkAction):
         return reverse(self.url, args=(container_name, obj.name))
 
 
+class ShareObject(tables.LinkAction):
+    name = "share_object"
+    verbose_name = _("Share object")
+    icon = "pencil"
+    url = "horizon:project:containers:object_share"
+    classes = ("ajax-modal",)
+    allowed_data_types = ("objects",)
+
+    def get_link_url(self, obj):
+        container_name = self.table.kwargs['container_name']
+        return reverse(self.url, args=(container_name, obj.name))
+
+    def allowed(self, request, obj):
+        container_name = obj.container_name
+        try:
+            container = api.swift.swift_get_container(request, container_name, with_data=False)
+            if not hasattr(container, 'encryption'):
+                return False
+            return container.encryption
+        except Exception:
+            exceptions.handle(request,
+                              _('Unable to delete container.'))
+        return False
+
+
 class DeleteObject(tables.DeleteAction):
     @staticmethod
     def action_present(count):
@@ -468,8 +493,8 @@ class ObjectsTable(tables.DataTable):
         verbose_name = _("Objects")
         table_actions = (ObjectFilterAction, CreatePseudoFolder, UploadObject,
                          DeleteMultipleObjects)
-        row_actions = (DownloadObject, UpdateObject, CopyObject,
-                       ViewObject, DeleteObject)
+        row_actions = (DownloadObject, UpdateObject, ShareObject,
+                       CopyObject, ViewObject, DeleteObject)
         data_types = ("subfolders", "objects")
         browser_table = "content"
         footer = False
