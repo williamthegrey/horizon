@@ -96,6 +96,7 @@ def _metadata_to_header(metadata):
     headers = {}
     public = metadata.get('is_public')
     encryption = metadata.get('encryption')
+    shared_user_id = metadata.get('shared_user_id')
 
     if public is True:
         public_container_acls = [GLOBAL_READ_ACL, LIST_CONTENTS_ACL]
@@ -107,6 +108,9 @@ def _metadata_to_header(metadata):
         headers['x-container-meta-encrypted'] = "True"
     elif encryption is False:
         headers['x-container-meta-encrypted'] = "False"
+
+    if shared_user_id:
+        headers['x-shared-user-id'] = shared_user_id
 
     return headers
 

@@ -84,6 +84,37 @@ class CreateContainer(forms.SelfHandlingForm):
             exceptions.handle(request, _('Unable to create container.'))
 
 
+class ShareContainer(forms.SelfHandlingForm):
+    path = forms.CharField(max_length=255,
+                           required=False,
+                           widget=forms.HiddenInput)
+    container_name = forms.CharField(widget=forms.HiddenInput())
+    shared_user = forms.ChoiceField(label=_("Shared User"))
+
+    def __init__(self, *args, **kwargs):
+        choices = kwargs.pop('shared_user_choices')
+        super(ShareContainer, self).__init__(*args, **kwargs)
+        self.fields['shared_user'].choices = choices
+
+    def clean(self):
+        data = super(ShareContainer, self).clean()
+
+        return data
+
+    def handle(self, request, data):
+        try:
+            shared_user_id = data["shared_user"]
+            metadata = ({'shared_user_id': shared_user_id})
+            container = api.swift.swift_update_container(request,
+                                                   data['container_name'],
+                                                   metadata=metadata)
+            msg = force_text(_("Container was successfully shared."))
+            messages.success(request, msg)
+            return container
+        except Exception:
+            exceptions.handle(request, _("Unable to share containr."))
+
+
 class UploadObject(forms.SelfHandlingForm):
     path = forms.CharField(max_length=255,
                            required=False,

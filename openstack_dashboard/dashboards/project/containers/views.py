@@ -279,6 +279,43 @@ class ContainerDetailView(forms.ModalFormMixin, generic.TemplateView):
         return context
 
 
+class ContainerShareView(forms.ModalFormView):
+    form_class = project_forms.ShareContainer
+    template_name = 'project/containers/container_share.html'
+    success_url = "horizon:project:containers:index"
+
+    def get_success_url(self):
+        container = tables.wrap_delimiter(self.request.POST['container_name'])
+        path = tables.wrap_delimiter(self.request.POST.get('path', ''))
+        args = (container, path)
+        return reverse(self.success_url, args=args)
+
+    def get_form_kwargs(self):
+        kwargs = super(ContainerShareView, self).get_form_kwargs()
+        try:
+            project_id = self.request.user.project_id
+            project_members = api.keystone.user_list(self.request,
+                                                     project=project_id)
+            choices = map(lambda user: (user.id, user.name), project_members)
+            kwargs['shared_user_choices'] = choices
+        except Exception:
+            redirect = reverse("horizon:project:containers:index")
+            exceptions.handle(self.request,
+                              _('Unable to list users of this project.'),
+                              redirect=redirect)
+        return kwargs
+
+    def get_initial(self):
+        return {"container_name": self.kwargs["container_name"],
+                "path": self.kwargs["subfolder_path"]}
+
+    def get_context_data(self, **kwargs):
+        context = super(ContainerShareView, self).get_context_data(**kwargs)
+        context['container_name'] = self.kwargs["container_name"]
+        context['subfolder_path'] = self.kwargs["subfolder_path"]
+        return context
+
+
 class ObjectDetailView(forms.ModalFormMixin, generic.TemplateView):
     template_name = 'project/containers/object_detail.html'
 
