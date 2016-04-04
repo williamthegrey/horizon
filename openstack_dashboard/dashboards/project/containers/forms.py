@@ -112,7 +112,7 @@ class ShareContainer(forms.SelfHandlingForm):
             messages.success(request, msg)
             return container
         except Exception:
-            exceptions.handle(request, _("Unable to share containr."))
+            exceptions.handle(request, _("Unable to share container."))
 
 
 class UploadObject(forms.SelfHandlingForm):
@@ -189,6 +189,48 @@ class UpdateObject(UploadObject):
             # to update ONLY metadata. This must be implemented when
             # object metadata can be updated from this panel.
             return True
+
+
+class ShareObject(forms.SelfHandlingForm):
+    path = forms.CharField(max_length=255,
+                           required=False,
+                           widget=forms.HiddenInput)
+    container_name = forms.CharField(widget=forms.HiddenInput())
+    object_name = forms.CharField(max_length=255,
+                           widget=forms.HiddenInput)
+    shared_user = forms.ChoiceField(label=_("Shared User"))
+
+    def __init__(self, *args, **kwargs):
+        choices = kwargs.pop('shared_user_choices')
+        super(ShareObject, self).__init__(*args, **kwargs)
+        self.fields['shared_user'].choices = choices
+
+    def clean(self):
+        data = super(ShareObject, self).clean()
+
+        return data
+
+    def _set_object_path(self, data):
+        if data['path']:
+            object_path = "/".join([data['path'].rstrip("/"), data['object_name']])
+        else:
+            object_path = data['object_name']
+        return object_path
+
+    def handle(self, request, data):
+        try:
+            object_path = self._set_object_path(data)
+            shared_user_id = data["shared_user"]
+            metadata = ({'shared_user_id': shared_user_id})
+            api.swift.swift_update_object(request,
+                                          data['container_name'],
+                                          object_path,
+                                          metadata=metadata)
+            msg = force_text(_("Object was successfully shared."))
+            messages.success(request, msg)
+            return True
+        except Exception:
+            exceptions.handle(request, _("Unable to share object."))
 
 
 class CreatePseudoFolder(forms.SelfHandlingForm):

@@ -361,3 +361,42 @@ class UpdateObjectView(forms.ModalFormView):
         context['subfolder_path'] = self.kwargs["subfolder_path"]
         context['object_name'] = self.kwargs["object_name"]
         return context
+
+
+class ObjectShareView(forms.ModalFormView):
+    form_class = project_forms.ShareObject
+    template_name = 'project/containers/object_share.html'
+    success_url = "horizon:project:containers:index"
+
+    def get_success_url(self):
+        container = tables.wrap_delimiter(self.request.POST['container_name'])
+        path = tables.wrap_delimiter(self.request.POST.get('path', ''))
+        args = (container, path)
+        return reverse(self.success_url, args=args)
+
+    def get_form_kwargs(self):
+        kwargs = super(ObjectShareView, self).get_form_kwargs()
+        try:
+            project_id = self.request.user.project_id
+            project_members = api.keystone.user_list(self.request,
+                                                     project=project_id)
+            choices = map(lambda user: (user.id, user.name), project_members)
+            kwargs['shared_user_choices'] = choices
+        except Exception:
+            redirect = reverse("horizon:project:containers:index")
+            exceptions.handle(self.request,
+                              _('Unable to list users of this project.'),
+                              redirect=redirect)
+        return kwargs
+
+    def get_initial(self):
+        return {"container_name": self.kwargs["container_name"],
+                "path": self.kwargs["subfolder_path"],
+                "object_name": self.kwargs["object_name"]}
+
+    def get_context_data(self, **kwargs):
+        context = super(ObjectShareView, self).get_context_data(**kwargs)
+        context['container_name'] = self.kwargs["container_name"]
+        context['subfolder_path'] = self.kwargs["subfolder_path"]
+        context['object_name'] = self.kwargs["object_name"]
+        return context

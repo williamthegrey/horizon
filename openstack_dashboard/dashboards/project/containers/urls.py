@@ -54,7 +54,7 @@ urlpatterns = patterns(VIEW_MOD,
 
     url(r'^(?P<container_name>[^/]+)/(?P<subfolder_path>(.+/)+)?'
         '(?P<object_name>.+)/object_share$',
-        views.ContainerShareView.as_view(),
+        views.ObjectShareView.as_view(),
         name='object_share'),
 
 
